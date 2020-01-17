@@ -95,7 +95,6 @@ async def russrul(ctx):
 
 
 
-# FIXME: wont fucking work
 @client.command()
 async def roll(ctx, rollmax: int):
   rollVal = randint(1,rollmax)
@@ -141,7 +140,7 @@ async def pain(ctx):
   pain_path = os.path.abspath('assets/feels/pain.jpg')
   await ctx.send(content="DON'T CALL IT A GRAVE, IT'S THE FUTURE YOU CHOSE",file=discord.File('{}'.format(pain_path)))
 
-# FIXME: Send 2 webms instead of 1; remove this quirk
+
 @client.command(aliases=['LOL','Lol','LoL'])
 async def lol(ctx):
   lolPath = os.path.abspath('assets/lol/')
