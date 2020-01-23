@@ -5,6 +5,13 @@
 #               audio playlist playback.
 
 
+
+# ATTENTION #
+# In place of using the .format() as seen in my other programs, try to use f-strings (f'insert text here')
+# whenever possible. It allows for easier string formatting and soon enough the previous string formatting 
+# methods will likely be phased out from future Python versions.
+
+
 import random
 from random import randint
 import os
@@ -19,7 +26,7 @@ client = commands.Bot(command_prefix='-')
 players = {}
 
 @client.event
-async def bot_ready():
+async def on_ready():
   now_ready = datetime.now()
   dt_str_ready = now_ready.strftime("%m/%d/%Y %H:%M:%S")
   print("Ignis Bot ::::: ONLINE\n\n{}".format(dt_str_ready))
@@ -50,7 +57,6 @@ async def dt(ctx):
   dt_str = now.strftime("%m/%d/%Y %H:%M:%S")
   await ctx.send(f'Date-Time: {dt_str}')
 
-# FIXME: Increase clearchat limit from 15 lines
 @client.command(aliases=['ClearChat','Clearchat'])
 async def clearchat(ctx, amount: int):
     await ctx.channel.purge(limit=amount)
@@ -109,8 +115,8 @@ async def _8ball(ctx, *, question):
 '''--------------- WEB COMMANDS --------------- '''
 '''   --------------- --------------- --------------- '''
 
-#https://github.com/appu1232/Discord-Selfbot/wiki/Google-API-Setup-for-Image-Search-Command
-#https://developers.google.com/custom-search/v1/overview?refresh=1
+# https://github.com/appu1232/Discord-Selfbot/wiki/Google-API-Setup-for-Image-Search-Command
+# https://developers.google.com/custom-search/v1/overview?refresh=1
 '''
 @client.command(aliases=['Google'])
 async def google()
