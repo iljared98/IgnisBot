@@ -1,10 +1,15 @@
 import discord
-import random
 import os
+import random
 from random import randint
 from discord.ext import commands
+import urbandictionary as ud
+import re
 
 class funCommand(commands.Cog):
+
+    """Commands for user entertainment."""
+
     def __init__(self, client):
         self.client = client
 
@@ -23,7 +28,7 @@ class funCommand(commands.Cog):
     @commands.command()
     async def roll(self, ctx, rollmin: int, rollmax: int):
         rollVal = randint(rollmin, rollmax)
-        await ctx.send(f'You rolled: {rollVal}!')
+        await ctx.send(f'{ctx.author.mention} rolled: {rollVal}!')
 
     @commands.command(aliases=['8ball'])
     async def _8ball(self, ctx, *, question):
@@ -33,25 +38,25 @@ class funCommand(commands.Cog):
                         "Don't ask questions you don't want to know the answer to.", 'Cannot predict now.',
                         'Ask your mother.', "Don't count on it.", 'My reply is no.', 'My sources say no.',
                         'Outlook not so good.', 'Very doubtful.']
-        await ctx.send(f'Question: {question}\nAnswer: {random.choice(responseList)}')
+        await ctx.send(f'{ctx.author.mention}  Question: {question}\nAnswer: {random.choice(responseList)}')
 
     @commands.command()
     async def hope(self, ctx):
 
         #FIXME: Add regex or some other check to allow hope PNG/JPG and no other filetypes!
-        hope_path = os.path.abspath('assets/feels/hope.jpg') # Change to relative path
-        await ctx.send(content="Have hope my fellow kings!", file=discord.File('{}'.format(hope_path)))
+        hope_path = os.path.abspath('assets/feels/hope.jpg') 
+        await ctx.send(content=f"{ctx.author.mention} Have hope my fellow king!", file=discord.File('{}'.format(hope_path)))
 
     @commands.command()
     async def pain(self, ctx):
         # FIXME: Add regex or some other check to allow hope PNG/JPG and no other filetypes!
-        pain_path = os.path.abspath('assets/feels/pain.jpg') # Change to relative path
-        await ctx.send(content="DON'T CALL IT A GRAVE, IT'S THE FUTURE YOU CHOSE",
+        pain_path = os.path.abspath('assets/feels/pain.jpg')
+        await ctx.send(content=f"{ctx.author.mention} DON'T CALL IT A GRAVE, IT'S THE FUTURE YOU CHOSE",
                        file=discord.File('{}'.format(pain_path)))
 
     @commands.command()
     async def lol(self, ctx):
-        lolPath = os.path.abspath('assets/lol/') # Change to relative path
+        lolPath = os.path.abspath('assets/lol/')
         lolExt = (".mp4", ".webm")
         lolList = []
         for file in os.listdir(lolPath):
@@ -61,23 +66,108 @@ class funCommand(commands.Cog):
         lolChosen = random.choice(lolList)
         await ctx.send(file=discord.File('{}'.format(lolChosen)))
 
-    # FIXME: Add this to the kino command later, let the users search by keyword
+    # FIXME: Add option for other popular webm searches etc. via regex rather than hard coding them!
     @commands.command()
-    async def spangbab(self, ctx):
-        krabsPiracy = ["Ahoy SpongeBob me boy, piracy is illegal in the United States of America! ARGH ARGH ARGH ARGH!",
-                       "Ahoy SpongeBoy me Bob, I am going to get sued by Viacom for posting the full SpongeBob movie! ARGH ARGH ARGH ARGH!",
-                       "Ahoy SpongeBob me boy, I found a shitty camera rip of the original SpongeBob movie! ARGH ARGH ARGH ARGH!"]
-        krabsPiracyResponse = random.choice(krabsPiracy)
-        await ctx.send(
-            f"{krabsPiracyResponse}\n https://cdn.discordapp.com/attachments/581533299491733570/632748985022414878/spongebob_first_movie.mp4")
+    async def kino(self, ctx, *,input):
+        if 'joker' in input.lower():
+            await ctx.send('SOCIETY\nhttps://cdn.discordapp.com/attachments/699151253321547857/710905743808659486/joker_movie.webm')
+        elif 'spongebob' in input.lower() or 'spangbab' in input.lower():
+            krabsPiracy = ["Ahoy SpongeBob me boy, piracy is illegal in the United States of America! ARGH ARGH ARGH ARGH!","Ahoy SpongeBoy me Bob, I am going to get sued by Viacom for posting the full SpongeBob movie! ARGH ARGH ARGH ARGH!","Ahoy SpongeBob me boy, I found a shitty camera rip of the original SpongeBob movie! ARGH ARGH ARGH ARGH!"]
+            krabsPiracyResponse = random.choice(krabsPiracy)
+            await ctx.send(f"{krabsPiracyResponse}\n https://cdn.discordapp.com/attachments/581533299491733570/632748985022414878/spongebob_first_movie.mp4")
+        elif 'shrek' in input.lower() or 'ogre' in input.lower():
+            await ctx.send("DUNKEY, WHAT ARE YA DOIN' IN MY SWAMP?!\nhttps://cdn.discordapp.com/attachments/639999420779462669/640368704185565194/Shrek.mp4")
+        else:
+            await ctx.send(':warning: Your search did not come up with any results, please try again!')
 
-        # Joker : https://cdn.discordapp.com/attachments/699151253321547857/710905743808659486/joker_movie.webm
+    # FIXME: Add sneed/sheev edit posting commands
+
+    @commands.command(aliases=['chokememe','chokes'])
+    async def choke(self, ctx):
+        chokePath = os.path.abspath('assets/choke/')
+        ext = (".png", ".jpg")
+        chokeList = []
+        for file in os.listdir(chokePath):
+            if file.endswith(ext):
+                chokeList.append(os.path.join(chokePath, file))
+
+        fileChoice = random.choice(chokeList)
+        await ctx.send(file=discord.File('{}'.format(fileChoice)))
+
+    @commands.command(aliases=['feedandseed','chuck','fuckandsuck'])
+    async def sneed(self, ctx):
+        sneedPath = os.path.abspath('assets/sneed/')
+        ext = (".png",".gif",".jpg",".apng")
+        sneedList = []
+        for file in os.listdir(sneedPath):
+            if file.endswith(ext):
+                sneedList.append(os.path.join(sneedPath, file))
+
+        fileChoice = random.choice(sneedList)
+        await ctx.send(file=discord.File('{}'.format(fileChoice)))
+
+    @commands.command()
+    async def asskey_movie(self, ctx, *args):
+        step1 = ' '.join(args)
+        words = step1.split('|')
+        if '|' not in args:
+            words.append('')
+        if len(words[0]) <= 29 and len(words[1]) <= 29:
+            x = 29 - len(words[0])
+            y = 29 - len(words[1])
+            spaceX = ' ' * round(x / 2)
+            spaceY = ' ' * round(y / 2)
+            finMessageX = f'{spaceX}{words[0].upper()}{spaceX}' # A cleaner solution would be to just use string formatting
+            finMessageY = f'{spaceY}{words[1].upper()}{spaceY}' # rather than setting up variables for spaces. I'll test it
+            if len(finMessageX) > 29:                           # myself at a later time, but for now this should work.
+                finMessageX = finMessageX[:-1]
+            elif len(finMessageX) < 29:
+                finMessageX = finMessageX + ' '
+            elif len(finMessageY) > 29:
+                finMessageY = finMessageY[:-1]
+            elif len(finMessageY) < 29:
+                finMessageY = finMessageY + ' '
+            await ctx.send(f'''```
+                     @-_________________-@
+               @-_____|   NOW SHOWING   |_____-@
+                |{finMessageX:^}|
+                |{finMessageY:^}|
+         _______|_____________________________|__________
+        |________________________________________________|
+        |               -                -               |
+        |   -       -             -                    - |
+        |        ____    ______________-   ____          |
+        | -  -  |    |   |  TICKETS   |   |    | -       |
+        |       |    |   |            |   |    |         |
+        |  --   |____| - |_o___oo___o_| - |____|     -   |
+        | -     |    |  |     --       |  |    |         |
+        |    -  |    |- | -      -     |  |    | --      |
+        |_______|====|__|______________|__|====|_________|
+       /                                                  \\
+      /____________________________________________________\\
 
 
+    ```''')
+        else:
+            await ctx.send(':warning: Movie title/subtitle has a maximum length of 29 characters!')
 
 
+    # FIXME: discord.ext.commands.errors.CommandInvokeError:
+    #  Command raised an exception: KeyError: 'result_type'
+    #  Need to fix this exception before the UrbanDictionary command works.
+    '''
+    @commands.command(aliases=['urbandict','urbandictionary','urb'])
+    async def urban(self, ctx, *, query):
+        #try:
+        defs = ud.define(f'{query}')
+        for d in defs:
+            print(d)
+            #embed = discord.Embed(title=f'__**{query}**__',description=realQuery)
+            #await ctx.send(embed=embed)
 
-
+       # except:
+            #await ctx.send(f"Couldn't find word : {query}")
+    '''
 
 def setup(client):
   client.add_cog(funCommand(client))
