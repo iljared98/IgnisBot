@@ -38,18 +38,21 @@ class adminCommand(commands.Cog):
                 await ctx.send(f'Member {member.mention} has been unbanned!')
                 return
 
+    '''
     @commands.command(aliases=['dc', 'disconnect'])
     @commands.is_owner()
     async def logout(self, ctx):
         await ctx.send(f'IgnisBot is going offline for maintenance. :wave:')
         await self.client.logout()
 
+    # FIXME: Appears even if I have the owner ID set to my own!
     @logout.error
     async def logout_error(self, ctx, error):
         if isinstance(error, commands.CheckFailure):
             await ctx.send(f'You do not have permission to use this command!')
         else:
             raise error
+    '''
 
 def setup(client):
   client.add_cog(adminCommand(client))
