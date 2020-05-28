@@ -107,32 +107,36 @@ class funCommand(commands.Cog):
         await ctx.send(file=discord.File('{}'.format(fileChoice)))
 
     @commands.command()
-    async def asskey_movie(self, ctx, *args):
-        step1 = ' '.join(args)
-        words = step1.split('|')
+    async def asskey_movie(ctx, *args):
+        joinArgs = ' '.join(args)
         if '|' not in args:
-            words.append('')
-        if len(words[0]) <= 29 and len(words[1]) <= 29:
-            x = 29 - len(words[0])
-            y = 29 - len(words[1])
-            spaceX = ' ' * round(x / 2)
-            spaceY = ' ' * round(y / 2)
-            finMessageX = f'{spaceX}{words[0].upper()}{spaceX}' # A cleaner solution would be to just use string formatting
-            finMessageY = f'{spaceY}{words[1].upper()}{spaceY}' # rather than setting up variables for spaces. I'll test it
-            if len(finMessageX) > 29:                           # myself at a later time, but for now this should work.
-                finMessageX = finMessageX[:-1]
-            elif len(finMessageX) < 29:
-                finMessageX = finMessageX + ' '
-            elif len(finMessageY) > 29:
-                finMessageY = finMessageY[:-1]
-            elif len(finMessageY) < 29:
-                finMessageY = finMessageY + ' '
-            await ctx.send(f'''```
-                     @-_________________-@
-               @-_____|   NOW SHOWING   |_____-@
-                |{finMessageX:^}|
-                |{finMessageY:^}|
-         _______|_____________________________|__________
+            joinArgs += '|' 
+            joinArgs += ''
+        words = joinArgs.split('|')
+        if len(words) > 2:
+            await ctx.send('Nice try retard')
+        else:
+            if len(words[0]) > 29 or len(words[1]) > 29:
+                await ctx.send('Title/subtitle must be less than 29 characters')
+            else:
+                x = 29 - len(words[0].strip())
+                y = 29 - len(words[1].strip())
+                spaceX = ' ' * int(x/2)
+                spaceY = ' ' * int(y/2)
+                finMessageX =  f'{spaceX}{words[0].upper().strip()}{spaceX}'
+                finMessageY =  f'{spaceY}{words[1].upper().strip()}{spaceY}'
+                if len(finMessageX) != 30:
+                    while len(finMessageX) != 30:
+                        finMessageX += ' '
+                if len(finMessageY) != 30:
+                    while len(finMessageY) != 30:
+                        finMessageY += ' '
+                await ctx.send(f'''```
+                      @-_________________-@
+                @-_____|   NOW SHOWING   |______-@
+                 |{finMessageX}|
+                 |{finMessageY}|
+         ________|______________________________|_________
         |________________________________________________|
         |               -                -               |
         |   -       -             -                    - |
@@ -145,12 +149,7 @@ class funCommand(commands.Cog):
         |_______|====|__|______________|__|====|_________|
        /                                                  \\
       /____________________________________________________\\
-
-
     ```''')
-        else:
-            await ctx.send(':warning: Movie title/subtitle has a maximum length of 29 characters!')
-
 
     # FIXME: discord.ext.commands.errors.CommandInvokeError:
     #  Command raised an exception: KeyError: 'result_type'
