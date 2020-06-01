@@ -2,18 +2,19 @@ import discord
 from discord.ext import commands
 from datetime import datetime
 import platform
-import wikipedia
+from wikipedia import wikipedia as wk
+import pyshorteners
 
-class utilCommands(commands.Cog):
+class Utility(commands.Cog):
 
   """General purpose commands."""
 
-  def __init__(self, client):
-    self.client = client
+  def __init__(self, bot):
+    self.bot = bot
 
   @commands.command()
   async def ping(self, ctx):
-    await ctx.send(f'Ping: {int(self.client.latency * 1000)}ms')
+    await ctx.send(f'Ping: {int(self.bot.latency * 1000)}ms')
 
   @commands.command()
   async def dt(self, ctx):
@@ -24,8 +25,8 @@ class utilCommands(commands.Cog):
   @commands.command() # Number of guilds joined, users in current guild, python version, maybe add more?
   async def stats(self, ctx):
     pyVersion = platform.python_version()
-    serversJoined = len(self.client.guilds)
-    userCount = len(set(self.client.get_all_members()))
+    serversJoined = len(self.bot.guilds)
+    userCount = len(set(self.bot.get_all_members()))
     statEmbed = discord.Embed(title="IgnisBot Statistics",description=f":snake: **Python Version:** {pyVersion}\n\n:computer: **Server Count:** {serversJoined}\n\n:family: **Users Count:** {userCount}")
 
     await ctx.send(embed=statEmbed)
@@ -36,37 +37,45 @@ class utilCommands(commands.Cog):
     if not cog:
       embed = discord.Embed(description="__IgnisBot Help__")
       cog_desc = ""
-      for item in self.client.cogs:
-        cog_desc += f'**{item}** - *{self.client.cogs[item].__doc__}*\n'
+      for item in self.bot.cogs:
+        cog_desc += f'**{item}** - *{self.bot.cogs[item].__doc__}*\n'
       embed.add_field(name='**Cogs**', value=cog_desc)
       await ctx.send(embed=embed)
 
 
-  # FIXME: Things that work: properly returns article summary
-  #        Things that need to be fixed: returning the article picture (or IgnisBot's avatar, if
-  #                                      the article doesn't have one), returning the correct title
-  #        Quality of life: find a more elegant way to cut off the end of the article, make it look
-  #                         less shitty, like ending it with whitespace
+  # FIXME: Returns the correct article for the most part, but it requires
+  #        user queries to be VERY specific. Currently leaving this as is, because
+  #        the core functionality works in 90% of cases. If you can figure out how to
+  #        make it require a less specific input, let me know.
 
-  @commands.command(aliases=['wikipedia', 'wikisearch', 'wik', 'wikiquery'])
-  async def wiki(self, ctx, *, query):
+  @commands.command(aliases=['wikipedia', 'wikisearch', 'wik', 'wikiquery','wk'])
+  async def wiki(self, ctx, *args):
+    try:
+      argString = str(' '.join(args))
+      s = pyshorteners.Shortener()
+      embed = discord.Embed(title=f'{wk.page(argString).title}', description=f'{wk.summary(argString, sentences=3)}')
+      embed.set_image(url=f'{wk.page(argString).images[0]}')
+      embed.add_field(name=f'*To read more, click the link below:*', value=f'*{s.chilpit.short(wk.page(argString).url)}*')
+      await ctx.send(embed=embed)
 
-    realQuery = wikipedia.search(query)
-    #try:
-    wk = wikipedia.page(auto_suggest=False, redirect=True)
-    queryResult = wikipedia.summary(query)
-    summaryLen = len(queryResult)
-    if summaryLen >= 2048:
-      while summaryLen != 1000:
-        queryResult = queryResult[:-1]
-        summaryLen = summaryLen - 1
-      queryResult = queryResult + ' [...]'
-      wikiEmbed = discord.Embed(title=f'__**{wk.title}**__', image=wk.images[0], description=f'{queryResult}')
-      await ctx.send(embed=wikiEmbed)
+    except:
+      argString = str(' '.join(args))
+      await ctx.send(f':warning: {ctx.author.mention} Could not process/find page : {argString}')
 
-    else:
-      wikiEmbed = discord.Embed(title=f'__**{wk.title}**__'.upper(), image=wk.images[0], description=f'{queryResult}')
-      await ctx.send(embed=wikiEmbed)
-      
-def setup(client):
-  client.add_cog(utilCommands(client))
+  @commands.command(aliases=['userinfo','whois'])
+  async def info(self, ctx, *, member: discord.Member):
+    embed = discord.Embed()
+
+    embed.set_author(name=f'Account Information : {member}')
+    embed.set_thumbnail(url=member.avatar_url)
+    embed.add_field(name='ID:', value=f'{member.id}')
+    embed.add_field(name='Display Name:', value=f'{member.display_name}')
+    embed.add_field(name='Creation Date:',value=f'{member.created_at.strftime(f"%m/%d/%Y %I:%M UTC")}')
+    embed.add_field(name='Join Date:', value=f'{member.joined_at.strftime(f"%m/%d/%Y %I:%M UTC")}')
+
+    await ctx.send(embed=embed)
+
+
+
+def setup(bot):
+  bot.add_cog(Utility(bot))
