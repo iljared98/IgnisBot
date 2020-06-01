@@ -6,6 +6,20 @@ from discord.ext import commands
 import urbandictionary as ud
 import re
 
+'''
+VERY IMPORTANT NOTE FOR THE URBAN DICTIONARY MODULE
+Do NOT use pip or PyPI to install this module, as that installation method is out of date.
+
+1. Find your local Python install and all of its modules (usually in appdata and 
+   the module folder is in .../libs/site-packages/
+2. Go to the UrbanDictionary wrapper repository (https://github.com/bocong/urbandictionary-py),
+   download the repo in a .zip file and save it in the folder containing your modules. Extract the repo folder.
+3. Open command prompt/terminal, navigate to the folder containing the UrbanDictionary module itself (one level
+   lower than the module directory).
+4. Run "python setup.py install"
+5. After this you should be able to import the latest version without any problems.
+'''
+
 class funCommand(commands.Cog):
 
     """Commands for user entertainment."""
@@ -150,23 +164,22 @@ class funCommand(commands.Cog):
        /                                                  \\
       /____________________________________________________\\
     ```''')
-
-    # FIXME: discord.ext.commands.errors.CommandInvokeError:
-    #  Command raised an exception: KeyError: 'result_type'
-    #  Need to fix this exception before the UrbanDictionary command works.
-    '''
+    
     @commands.command(aliases=['urbandict','urbandictionary','urb'])
-    async def urban(self, ctx, *, query):
-        #try:
-        defs = ud.define(f'{query}')
-        for d in defs:
-            print(d)
-            #embed = discord.Embed(title=f'__**{query}**__',description=realQuery)
-            #await ctx.send(embed=embed)
+    async def urban(self, ctx, *args):
 
-       # except:
-            #await ctx.send(f"Couldn't find word : {query}")
-    '''
+        query = str(' '.join(args))
+        defs = ud.define(f'{query}')
+        if len(defs) >= 1:
+            for i in defs:
+                embed = discord.Embed(title=f'__**{i.word}**__',description=f'__Definition:__\n{i.definition}\n\n__Example:__\n*{i.example}*')
+                await ctx.send(embed=embed)
+                break
+        else:
+            query = str(' '.join(args))
+            await ctx.send(f":warning: {ctx.author.mention} Couldn't find word term : {query}")
+
+
 
 def setup(client):
   client.add_cog(funCommand(client))
