@@ -4,6 +4,17 @@ from datetime import datetime
 import platform
 from wikipedia import wikipedia as wk
 import pyshorteners
+#import google
+import wolframalpha as wa
+
+import bs4
+import os
+from configparser import ConfigParser as cp
+
+config = cp()
+cfgpath = os.getcwd() + "//ignis.cfg"
+config.read(cfgpath)
+WA_KEY = config.get("API_KEYS", "wolfkey")
 
 class Utility(commands.Cog):
 
@@ -75,6 +86,37 @@ class Utility(commands.Cog):
 
     await ctx.send(embed=embed)
 
+  '''
+  @commands.command(aliases=['goggle','goog','goo.gl'])
+  async def google(self, ctx, *, query):
+    pass
+  '''
+
+  # FIXME: Eventually will require the command to display images and graphs for the user should they desire them
+  #        However in the meantime, the user is still able to have 90% of queries answered, so we'll leave it as is.
+
+  @commands.command(aliases=['wolfram','wa','wolf'])
+  async def wolframalpha(self, ctx, *, query):
+    try:
+      client = wa.Client(WA_KEY)
+      embed = discord.Embed(description=f'**__Question:__** *{query}*')
+
+      search = client.query(query)
+      result = next(search.results).text
+      #resImg = result['queryresult']['pods'][0]['subpods'][0]['imagesource']
+      embed.add_field(name='Answer',value=f'{result}')
+
+      embed.set_thumbnail(url='https://cdn.discordapp.com/avatars/644436203315396629/305ad4cf60fd9bc0f787e6c95c5523d3.png')
+      #embed.set_image(url=resImg)
+      await ctx.send(embed=embed)
+    except:
+      await ctx.send(f':warning: {ctx.author.mention} Wolfram|Alpha was not able to process your query. Please try again.')
+
+  @commands.command()
+  async def poll(self, ctx):
+    pass
+
+ # @commands.command()
 
 
 def setup(bot):
