@@ -3,9 +3,9 @@ import os
 import random
 from random import randint
 from discord.ext import commands
-import urbandictionary as ud
 import re
-
+import urllib.parse, urllib.request
+import urbandictionary as ud
 '''
 VERY IMPORTANT NOTE FOR THE URBAN DICTIONARY MODULE
 Do NOT use pip or PyPI to install this module, as that installation method is out of date.
@@ -20,12 +20,12 @@ Do NOT use pip or PyPI to install this module, as that installation method is ou
 5. After this you should be able to import the latest version without any problems.
 '''
 
-class funCommand(commands.Cog):
+class Recreational(commands.Cog):
 
     """Commands for user entertainment."""
 
-    def __init__(self, client):
-        self.client = client
+    def __init__(self, bot):
+        self.bot = bot
 
     # FIXME: Expand functionality with betting and passing the gun to other users
     @commands.command()
@@ -46,13 +46,16 @@ class funCommand(commands.Cog):
 
     @commands.command(aliases=['8ball'])
     async def _8ball(self, ctx, *, question):
-        responseList = ['It is certain.', 'It is decidedly so.', 'Without a doubt.', 'Yes - definitely.',
-                        'You may rely on it.', 'As I see it, yes.', 'Most likely.', 'Outlook good.', 'Yes.',
-                        'Signs point to yes.', 'Reply hazy, try again later.', 'Ask another time.',
-                        "Don't ask questions you don't want to know the answer to.", 'Cannot predict now.',
-                        'Ask your mother.', "Don't count on it.", 'My reply is no.', 'My sources say no.',
-                        'Outlook not so good.', 'Very doubtful.']
-        await ctx.send(f'{ctx.author.mention}  Question: {question}\nAnswer: {random.choice(responseList)}')
+        if len(question) == 0:
+            await ctx.send(f':warning: {ctx.author.mention} Cannot predict off of a blank input.', delete_after=15)
+        else:
+            responseList = ['It is certain.', 'It is decidedly so.', 'Without a doubt.', 'Yes - definitely.',
+                            'You may rely on it.', 'As I see it, yes.', 'Most likely.', 'Outlook good.', 'Yes.',
+                            'Signs point to yes.', 'Reply hazy, try again later.', 'Ask another time.',
+                            "Don't ask questions you don't want to know the answer to.", 'Cannot predict now.',
+                            'Ask your mother.', "Don't count on it.", 'My reply is no.', 'My sources say no.',
+                            'Outlook not so good.', 'Very doubtful.']
+            await ctx.send(f'{ctx.author.mention}  Question: {question}\nAnswer: {random.choice(responseList)}')
 
     @commands.command()
     async def hope(self, ctx):
@@ -83,6 +86,7 @@ class funCommand(commands.Cog):
     # FIXME: Add option for other popular webm searches etc. via regex rather than hard coding them!
     @commands.command()
     async def kino(self, ctx, *,input):
+
         if 'joker' in input.lower():
             await ctx.send('SOCIETY\nhttps://cdn.discordapp.com/attachments/699151253321547857/710905743808659486/joker_movie.webm')
         elif 'spongebob' in input.lower() or 'spangbab' in input.lower():
@@ -94,7 +98,7 @@ class funCommand(commands.Cog):
         else:
             await ctx.send(':warning: Your search did not come up with any results, please try again!')
 
-    # FIXME: Add sneed/sheev edit posting commands
+    # FIXME: Add sheev edit posting commands
 
     @commands.command(aliases=['chokememe','chokes'])
     async def choke(self, ctx):
@@ -121,50 +125,61 @@ class funCommand(commands.Cog):
         await ctx.send(file=discord.File('{}'.format(fileChoice)))
 
     @commands.command()
-    async def asskey_movie(ctx, *args):
+    async def asskey_movie(self, ctx, *args):
         joinArgs = ' '.join(args)
         if '|' not in args:
-            joinArgs += '|' 
+            joinArgs += '|'
             joinArgs += ''
         words = joinArgs.split('|')
         if len(words) > 2:
-            await ctx.send('Nice try retard')
+            await ctx.send(f':warning: {ctx.author.mention} Too many arguments given. Marquee can have a maximum of 2 lines.')
         else:
             if len(words[0]) > 29 or len(words[1]) > 29:
-                await ctx.send('Title/subtitle must be less than 29 characters')
+                await ctx.send(f':warning: {ctx.author.mention } The marquee title/subtitle can be a maximum of 29 characters.', delete_after=15)
             else:
                 x = 29 - len(words[0].strip())
                 y = 29 - len(words[1].strip())
-                spaceX = ' ' * int(x/2)
-                spaceY = ' ' * int(y/2)
-                finMessageX =  f'{spaceX}{words[0].upper().strip()}{spaceX}'
-                finMessageY =  f'{spaceY}{words[1].upper().strip()}{spaceY}'
+                spaceX = ' ' * int(x / 2)
+                spaceY = ' ' * int(y / 2)
+                finMessageX = f'{spaceX}{words[0].upper().strip()}{spaceX}'
+                finMessageY = f'{spaceY}{words[1].upper().strip()}{spaceY}'
                 if len(finMessageX) != 30:
                     while len(finMessageX) != 30:
                         finMessageX += ' '
                 if len(finMessageY) != 30:
                     while len(finMessageY) != 30:
                         finMessageY += ' '
-                await ctx.send(f'''```
-                      @-_________________-@
-                @-_____|   NOW SHOWING   |______-@
-                 |{finMessageX}|
-                 |{finMessageY}|
-         ________|______________________________|_________
-        |________________________________________________|
-        |               -                -               |
-        |   -       -             -                    - |
-        |        ____    ______________-   ____          |
-        | -  -  |    |   |  TICKETS   |   |    | -       |
-        |       |    |   |            |   |    |         |
-        |  --   |____| - |_o___oo___o_| - |____|     -   |
-        | -     |    |  |     --       |  |    |         |
-        |    -  |    |- | -      -     |  |    | --      |
-        |_______|====|__|______________|__|====|_________|
-       /                                                  \\
-      /____________________________________________________\\
-    ```''')
-    
+                await ctx.send(f"""```
+                          @-_________________-@
+                    @-_____|   NOW SHOWING   |______-@
+                     |{finMessageX}|
+                     |{finMessageY}|
+             ________|______________________________|_________
+            |________________________________________________|
+            |               -                -               |
+            |   -       -             -                    - |
+            |        ____    ______________-   ____          |
+            | -  -  |    |   |  TICKETS   |   |    | -       |
+            |       |    |   |            |   |    |         |
+            |  --   |____| - |_o___oo___o_| - |____|     -   |
+            | -     |    |  |     --       |  |    |         |
+            |    -  |    |- | -      -     |  |    | --      |
+            |_______|====|__|______________|__|====|_________|
+           /                                                  \\
+         
+        ```""")
+
+
+    '''
+    Using a for loop because the defs is a list of dictionary entries
+    Nic, if you're able to find a more elegant implementation of this,
+    it'd be a godsend, we only need the first (most popular) result
+    displayed for the user. The other check is for words that have
+    no definitions at all; since an exception isn't raised if there are 
+    0 defs, we just check the length of the list to see if it's an "actual"
+    term or not.
+    '''
+
     @commands.command(aliases=['urbandict','urbandictionary','urb'])
     async def urban(self, ctx, *args):
 
@@ -179,7 +194,27 @@ class funCommand(commands.Cog):
             query = str(' '.join(args))
             await ctx.send(f":warning: {ctx.author.mention} Couldn't find word term : {query}")
 
+    @commands.command(aliases=['asskey_comp','ascii_comp','computer'])
+    async def ascii_computer(self, ctx, *args):
+        pass
 
+    # FIXME: Add more info such as the first 2 description lines, video name etc...
+    @commands.command(aliases=['yt'])
+    async def youtube(self, ctx, *, query):
+        try:
+            search = urllib.parse.urlencode({
+                'search_query' : query
+            })
+            content = urllib.request.urlopen('https://www.youtube.com/results?' + search)
+            results = re.findall('href=\"\\/watch\\?v=(.{11})', content.read().decode())
+            await ctx.send('https://youtube.com/watch?v=' + results[1])
 
-def setup(client):
-  client.add_cog(funCommand(client))
+        except:
+            await ctx.send(f':warning: {ctx.author.mention} Video could not be found/processed.')
+
+    @commands.command(aliases=['gameinfo'])
+    async def igdb(self, ctx, *, query):
+        pass
+
+def setup(bot):
+  bot.add_cog(Recreational(bot))
