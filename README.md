@@ -1,2 +1,6 @@
-# IgnisBotPrivate
-Ignis Bot code so far. DO NOT RELEASE TO THE PUBLIC WHATSOEVER!
+# IgnisBot
+### Requires:
+- Python 3.x
+- The Discord.py rewrite, among other modules for each cog.
+
+General purpose Discord chatbot, used for recreational purposes and moderation tasks.
