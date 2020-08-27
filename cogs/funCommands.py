@@ -27,7 +27,6 @@ class Recreational(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    # FIXME: Expand functionality with betting and passing the gun to other users
     @commands.command()
     async def russrul(self, ctx):
         chambers = [1, 2, 3, 4, 5, 6]
@@ -60,13 +59,12 @@ class Recreational(commands.Cog):
     @commands.command()
     async def hope(self, ctx):
 
-        #FIXME: Add regex or some other check to allow hope PNG/JPG and no other filetypes!
+        
         hope_path = os.path.abspath('assets/feels/hope.jpg') 
         await ctx.send(content=f"{ctx.author.mention} Have hope my fellow king!", file=discord.File('{}'.format(hope_path)))
 
     @commands.command()
     async def pain(self, ctx):
-        # FIXME: Add regex or some other check to allow hope PNG/JPG and no other filetypes!
         pain_path = os.path.abspath('assets/feels/pain.jpg')
         await ctx.send(content=f"{ctx.author.mention} DON'T CALL IT A GRAVE, IT'S THE FUTURE YOU CHOSE",
                        file=discord.File('{}'.format(pain_path)))
@@ -83,7 +81,6 @@ class Recreational(commands.Cog):
         lolChosen = random.choice(lolList)
         await ctx.send(file=discord.File('{}'.format(lolChosen)))
 
-    # FIXME: Add option for other popular webm searches etc. via regex rather than hard coding them!
     @commands.command()
     async def kino(self, ctx, *,input):
 
@@ -98,7 +95,6 @@ class Recreational(commands.Cog):
         else:
             await ctx.send(':warning: Your search did not come up with any results, please try again!')
 
-    # FIXME: Add sheev edit posting commands
 
     @commands.command(aliases=['chokememe','chokes'])
     async def choke(self, ctx):
@@ -125,7 +121,7 @@ class Recreational(commands.Cog):
         await ctx.send(file=discord.File('{}'.format(fileChoice)))
 
     @commands.command()
-    async def asskey_movie(self, ctx, *args):
+    async def ascii_movie(self, ctx, *args):
         joinArgs = ' '.join(args)
         if '|' not in args:
             joinArgs += '|'
@@ -169,17 +165,6 @@ class Recreational(commands.Cog):
          
         ```""")
 
-
-    '''
-    Using a for loop because the defs is a list of dictionary entries
-    Nic, if you're able to find a more elegant implementation of this,
-    it'd be a godsend, we only need the first (most popular) result
-    displayed for the user. The other check is for words that have
-    no definitions at all; since an exception isn't raised if there are 
-    0 defs, we just check the length of the list to see if it's an "actual"
-    term or not.
-    '''
-
     @commands.command(aliases=['urbandict','urbandictionary','urb'])
     async def urban(self, ctx, *args):
 
@@ -198,7 +183,6 @@ class Recreational(commands.Cog):
     async def ascii_computer(self, ctx, *args):
         pass
 
-    # FIXME: Add more info such as the first 2 description lines, video name etc...
     @commands.command(aliases=['yt'])
     async def youtube(self, ctx, *, query):
         try:
