@@ -42,7 +42,6 @@ class Utility(commands.Cog):
 
     await ctx.send(embed=statEmbed)
 
-  # Needs to be expanded upon, have an embed generated for each command name/description later on.
   @commands.command()
   async def help(self, ctx, *cog):
     if not cog:
@@ -52,12 +51,6 @@ class Utility(commands.Cog):
         cog_desc += f'**{item}** - *{self.bot.cogs[item].__doc__}*\n'
       embed.add_field(name='**Cogs**', value=cog_desc)
       await ctx.send(embed=embed)
-
-
-  # FIXME: Returns the correct article for the most part, but it requires
-  #        user queries to be VERY specific. Currently leaving this as is, because
-  #        the core functionality works in 90% of cases. If you can figure out how to
-  #        make it require a less specific input, let me know.
 
   @commands.command(aliases=['wikipedia', 'wikisearch', 'wik', 'wikiquery','wk'])
   async def wiki(self, ctx, *args):
@@ -86,15 +79,6 @@ class Utility(commands.Cog):
 
     await ctx.send(embed=embed)
 
-  '''
-  @commands.command(aliases=['goggle','goog','goo.gl'])
-  async def google(self, ctx, *, query):
-    pass
-  '''
-
-  # FIXME: Eventually will require the command to display images and graphs for the user should they desire them
-  #        However in the meantime, the user is still able to have 90% of queries answered, so we'll leave it as is.
-
   @commands.command(aliases=['wolfram','wa','wolf'])
   async def wolframalpha(self, ctx, *, query):
     try:
@@ -103,7 +87,6 @@ class Utility(commands.Cog):
 
       search = client.query(query)
       result = next(search.results).text
-      #resImg = result['queryresult']['pods'][0]['subpods'][0]['imagesource']
       embed.add_field(name='Answer',value=f'{result}')
 
       embed.set_thumbnail(url='https://cdn.discordapp.com/avatars/644436203315396629/305ad4cf60fd9bc0f787e6c95c5523d3.png')
@@ -111,13 +94,6 @@ class Utility(commands.Cog):
       await ctx.send(embed=embed)
     except:
       await ctx.send(f':warning: {ctx.author.mention} Wolfram|Alpha was not able to process your query. Please try again.')
-
-  @commands.command()
-  async def poll(self, ctx):
-    pass
-
- # @commands.command()
-
 
 def setup(bot):
   bot.add_cog(Utility(bot))
