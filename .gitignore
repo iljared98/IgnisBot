@@ -1,0 +1,18 @@
+# Media filetypes
+*.jpg
+*.webm
+*.png
+*.webp
+*.gif
+*.apng
+*.mp4
+*.jpeg
+
+# Misc file types
+*.cfg
+*.env
+*.exe
+
+# Misc folders
+/assets
+/urbandictionary-py
