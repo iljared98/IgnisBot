@@ -61,64 +61,48 @@ class Recreational(commands.Cog):
 
         
         hope_path = os.path.abspath('assets/feels/hope.jpg') 
-        await ctx.send(content=f"{ctx.author.mention} Have hope my fellow king!", file=discord.File('{}'.format(hope_path)))
+        await ctx.send(content=f"{ctx.author.mention} Have hope my fellow kings!", file=discord.File('{}'.format(hope_path)))
 
     @commands.command()
     async def pain(self, ctx):
-        pain_path = os.path.abspath('assets/feels/pain.jpg')
-        await ctx.send(content=f"{ctx.author.mention} DON'T CALL IT A GRAVE, IT'S THE FUTURE YOU CHOSE",
-                       file=discord.File('{}'.format(pain_path)))
+        responses = ["**DON'T CALL IT A GRAVE, IT'S THE FUTURE YOU CHOSE**", "**THE BELLS TOLL FOR THEE**",
+                     "**WHEN WILL YOU LEARN THAT YOUR ACTIONS HAVE CONSEQUENCES**", "**THE ABYSS HAS FINALLY STARED BACK**"]
+        fileUpload = random.choice(os.listdir("assets/feels/pain/"))
+        await ctx.send(content=f"{random.choice(responses)}", file=discord.File(f'assets/feels/pain/{fileUpload}'))
 
     @commands.command()
     async def lol(self, ctx):
-        lolPath = os.path.abspath('assets/lol/')
-        lolExt = (".mp4", ".webm")
-        lolList = []
-        for file in os.listdir(lolPath):
-            if file.endswith(lolExt):
-                lolList.append(os.path.join(lolPath, file))
-
-        lolChosen = random.choice(lolList)
-        await ctx.send(file=discord.File('{}'.format(lolChosen)))
+        vid = random.choice(os.listdir("assets/lol/"))
+        await ctx.send(content=f'', file=discord.File(f'assets/lol/{vid}'))
 
     @commands.command()
-    async def kino(self, ctx, *,input):
+    async def kino(self, ctx, *,input): # FIXME: Add new logic to determine which link to post to the chat!
 
         if 'joker' in input.lower():
             await ctx.send('SOCIETY\nhttps://cdn.discordapp.com/attachments/699151253321547857/710905743808659486/joker_movie.webm')
         elif 'spongebob' in input.lower() or 'spangbab' in input.lower():
-            krabsPiracy = ["Ahoy SpongeBob me boy, piracy is illegal in the United States of America! ARGH ARGH ARGH ARGH!","Ahoy SpongeBoy me Bob, I am going to get sued by Viacom for posting the full SpongeBob movie! ARGH ARGH ARGH ARGH!","Ahoy SpongeBob me boy, I found a shitty camera rip of the original SpongeBob movie! ARGH ARGH ARGH ARGH!"]
+            krabsPiracy = ["Ahoy SpongeBob me boy, piracy is illegal in the United States of America! ARGH ARGH ARGH ARGH!",
+                           "Ahoy SpongeBoy me Bob, I am going to get sued by Viacom for posting the full SpongeBob movie! ARGH ARGH ARGH ARGH!",
+                           "Ahoy SpongeBob me boy, I found a shitty camera rip of the original SpongeBob movie! ARGH ARGH ARGH ARGH!"]
             krabsPiracyResponse = random.choice(krabsPiracy)
             await ctx.send(f"{krabsPiracyResponse}\n https://cdn.discordapp.com/attachments/581533299491733570/632748985022414878/spongebob_first_movie.mp4")
         elif 'shrek' in input.lower() or 'ogre' in input.lower():
             await ctx.send("DUNKEY, WHAT ARE YA DOIN' IN MY SWAMP?!\nhttps://cdn.discordapp.com/attachments/639999420779462669/640368704185565194/Shrek.mp4")
+        elif 'bee' in input.lower():
+            await ctx.send('KINO IS BACK ON THE MENU BOYS\nhttps://cdn.discordapp.com/attachments/419074439703953411/437179464619786261/beemovie.mp4')
         else:
             await ctx.send(':warning: Your search did not come up with any results, please try again!')
 
 
     @commands.command(aliases=['chokememe','chokes'])
     async def choke(self, ctx):
-        chokePath = os.path.abspath('assets/choke/')
-        ext = (".png", ".jpg")
-        chokeList = []
-        for file in os.listdir(chokePath):
-            if file.endswith(ext):
-                chokeList.append(os.path.join(chokePath, file))
-
-        fileChoice = random.choice(chokeList)
-        await ctx.send(file=discord.File('{}'.format(fileChoice)))
+        chokeImg = random.choice(os.listdir("assets/choke/"))
+        await ctx.send(content=f'', file=discord.File(f'assets/choke/{chokeImg}'))
 
     @commands.command(aliases=['feedandseed','chuck','fuckandsuck'])
     async def sneed(self, ctx):
-        sneedPath = os.path.abspath('assets/sneed/')
-        ext = (".png",".gif",".jpg",".apng")
-        sneedList = []
-        for file in os.listdir(sneedPath):
-            if file.endswith(ext):
-                sneedList.append(os.path.join(sneedPath, file))
-
-        fileChoice = random.choice(sneedList)
-        await ctx.send(file=discord.File('{}'.format(fileChoice)))
+        sneedImg = random.choice(os.listdir("assets/sneed/"))
+        await ctx.send(content=f'', file=discord.File(f'assets/sneed/{sneedImg}'))
 
     @commands.command()
     async def ascii_movie(self, ctx, *args):
@@ -131,7 +115,7 @@ class Recreational(commands.Cog):
             await ctx.send(f':warning: {ctx.author.mention} Too many arguments given. Marquee can have a maximum of 2 lines.')
         else:
             if len(words[0]) > 29 or len(words[1]) > 29:
-                await ctx.send(f':warning: {ctx.author.mention } The marquee title/subtitle can be a maximum of 29 characters.', delete_after=15)
+                await ctx.send(f':warning: {ctx.author.mention} The marquee title/subtitle can be a maximum of 29 characters.', delete_after=15)
             else:
                 x = 29 - len(words[0].strip())
                 y = 29 - len(words[1].strip())
@@ -190,15 +174,22 @@ class Recreational(commands.Cog):
                 'search_query' : query
             })
             content = urllib.request.urlopen('https://www.youtube.com/results?' + search)
-            results = re.findall('href=\"\\/watch\\?v=(.{11})', content.read().decode())
-            await ctx.send('https://youtube.com/watch?v=' + results[1])
+            results = re.findall(r'/watch\?v=(.{11})', content.read().decode()) #FIXME: Keep an eye on this, a Youtube update
+                                                                                # nearly broke this aspect of the command last time.
+            await ctx.send('https://youtube.com/watch?v=' + results[0])
 
         except:
-            await ctx.send(f':warning: {ctx.author.mention} Video could not be found/processed.')
+            await ctx.send(f':warning: {ctx.author.mention} **Video could not be found/processed.**')
 
     @commands.command(aliases=['gameinfo'])
     async def igdb(self, ctx, *, query):
         pass
+
+    @commands.command(name='soy', aliases=['soi']) #FIXME: Add the text from the post above the command and greentext it.
+    async def soyCommand(self, ctx):
+        postImg = random.choice(os.listdir("assets/soy/"))
+        await ctx.send(content=f'PLACEHOLDER', file=discord.File(f'assets/soy/{postImg}'))
+
 
 def setup(bot):
   bot.add_cog(Recreational(bot))
