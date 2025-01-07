@@ -3,31 +3,19 @@ from discord.ext import commands
 import datetime
 from datetime import datetime
 import platform
-#import pandas as pd
-#from iexfinance.stocks import get_historical_data
-#from iexfinance.stocks import get_historical_intraday
-from iexfinance.stocks import Stock
 from wikipedia import wikipedia as wk
 import pyshorteners
-#import google
 import wolframalpha as wa
 from pyowm import OWM
-#import bs4
 import os
 import nasapy
-#import json
-from configparser import ConfigParser as cp
+import toml
 
-config = cp()
-cfgpath = os.getcwd() + "//ignis.cfg"
-config.read(cfgpath)
+config = toml.load("config.toml")
 
-WA_KEY = config.get("API_KEYS", "wolfkey")
-STOCK_KEY = config.get("API_KEYS", "iexcloudPUBLISH")
-STOCK_KEY_PRIV = config.get("API_KEYS", "iexcloudSECRET")
-NASA_KEY = config.get("API_KEYS", "nasa")
-OWM_KEY = config.get("API_KEYS", "openweathermap")
-
+WA_KEY = config["WOLFRAM_ALPHA"]
+NASA_KEY = config["NASA"]
+OWM_KEY = config["OPEN_WEATHER_MAP"]
 
 class Utility(commands.Cog):
 
@@ -58,6 +46,7 @@ class Utility(commands.Cog):
 
     await ctx.send(embed=statEmbed)
 
+  # TODO: Rewrite and document this command. 
   @commands.command()
   async def help(self, ctx, *cog):
     if not cog:
@@ -68,7 +57,7 @@ class Utility(commands.Cog):
       embed.add_field(name='**Cogs**', value=cog_desc)
       await ctx.send(embed=embed)
 
-  #FIXME: Rewrite this entire command or find a module that does its job better.
+  #! Broken, fix or find replacement module. 
   @commands.command(aliases=['wikipedia', 'wikisearch', 'wik', 'wikiquery','wk'])
   async def wiki(self, ctx, *args):
     try:
@@ -83,6 +72,8 @@ class Utility(commands.Cog):
       argString = str(' '.join(args))
       await ctx.send(f':warning: {ctx.author.mention} Could not process/find page : {argString}')
 
+
+  #! Fix this, command is broken. 
   @commands.command(aliases=['userinfo','whois'])
   async def info(self, ctx, *, member: discord.Member):
     embed = discord.Embed()
@@ -96,6 +87,7 @@ class Utility(commands.Cog):
 
     await ctx.send(embed=embed)
 
+  #! Fix, error outputs Client.aquery was never awaited. 
   @commands.command(aliases=['wolfram','wa','wolf'])
   async def wolframalpha(self, ctx, *, query): #FIXME: Add support for answers to return images; such as graphs, diagrams etc...
     try:
@@ -112,24 +104,7 @@ class Utility(commands.Cog):
     except:
       await ctx.send(f':warning: {ctx.author.mention} Wolfram|Alpha was not able to process your query. Please try again.')
 
-  @commands.command(name='stock', aliases=['stocks'])
-  async def stockCommand(self, ctx, ticker):
-    start = datetime.now() #FIXME: Potentially use another API instead, none of the desired fields will return despite
-                           # being used according to the directions of their documentation. Troubleshoot this ASAP
-
-    stock = Stock(str(ticker), token=STOCK_KEY)
-
-    #df = get_historical_intraday(ticker, output_format='pandas', token=STOCK_KEY)
-    #df = df.reindex(index=df.index[::-1])
-    embed = discord.Embed()
-    embed.set_author(name=stock.get_company_name())
-    embed.add_field(name="Stock Price", value=f'${stock.get_price()}')
-    #embed.add_field(name="Sector", value=stock.get_sector())
-    #embed.add_field(name="Year High", value=f'${stock.get_years_high()}')
-    #embed.add_field(name="Year Low", value=f"${stock.get_years_low()}")
-
-    await ctx.send(embed=embed)
-
+  #! Broken, need to update this. 
   @commands.command(name='potd')
   async def potdCommand(self, ctx):
     nasa = nasapy.Nasa(key=NASA_KEY)
@@ -150,7 +125,8 @@ class Utility(commands.Cog):
       await ctx.send(embed=embed)
 
 
-  @commands.command(name='weather') # FIXME: Add more specific functionality later, for now just enable city searching.
+  #! Works, need to fix the climate icon. 
+  @commands.command(name='weather')
   async def weatherCommand(self, ctx, query):
     try:
       owm = OWM(OWM_KEY)
@@ -169,5 +145,5 @@ class Utility(commands.Cog):
     except:
       await ctx.send(f':warning: {ctx.author.mention} There was an issue with your Openweathermap query. Please try again.')
 
-def setup(bot):
-  bot.add_cog(Utility(bot))
+async def setup(bot):
+  await bot.add_cog(Utility(bot))

@@ -1,0 +1,27 @@
+# What users insert before executing a command. i.e. -help
+COMMAND_PREFIX="-"
+
+# Refer to official Discord docs for how to get these.
+API_TOKEN="BLANK"
+OWNER_ID="BLANK"
+
+# Default path for cog files. Should you need to restructure the project point to this folder here for your
+# other Discord modules.
+COGS_DIR="./cogs"
+BOT_STATUS_MSG="BLANK"
+
+
+############################################################
+#                                                          #
+#                      SERVICE API KEYS                    #
+#                                                          #
+############################################################
+
+# This program uses API keys from various services. Refer to each service's site for
+# documentation on requesting and utilizing their APIs. The main branch of this is tested
+# with the free versions of these APIs.
+WOLFRAM_ALPHA="BLANK"
+IGDB="BLANK"
+OPEN_WEATHER_MAP="BLANK"
+NASA="BLANK"
+STEAM="BLANK"

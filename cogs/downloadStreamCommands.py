@@ -8,7 +8,7 @@ from zipfile import ZipFile
 from bs4 import BeautifulSoup as bs
 
 
-
+#! Contributed by Nic at one point. Need to rework this section. 1/5/2025
 class downloadStreamCommands(commands.Cog):
 
     """Commands involving downloading files, web scraping, and streaming video."""
@@ -16,6 +16,7 @@ class downloadStreamCommands(commands.Cog):
     def __init__(self, client):
         self.client = client
 
+    #! Add YTDL module, test and see if it works. 
     @commands.command()
     async def ytInfo(ctx, URL, *args):
         with youtube_dl.YoutubeDL() as ydl:
@@ -63,5 +64,5 @@ class downloadStreamCommands(commands.Cog):
 
 
 
-def setup(client):
-  client.add_cog(downloadStreamCommands(client))
+async def setup(client):
+  await client.add_cog(downloadStreamCommands(client))
