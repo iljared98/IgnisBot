@@ -1,16 +1,19 @@
-# What users insert before executing a command. i.e. -help
+# I. Jared 1/5/2025
+
 COMMAND_PREFIX="-"
 
 # Refer to official Discord docs for how to get these.
-API_TOKEN="BLANK"
-OWNER_ID="BLANK"
+API_TOKEN=""
+OWNER_ID=""
 
 # Default path for cog files. Should you need to restructure the project point to this folder here for your
 # other Discord modules.
 COGS_DIR="./cogs"
-BOT_STATUS_MSG="BLANK"
-
-
+DOWNLOAD_STREAM_LOGS="./"
+FUN_CMD_LOGS="./"
+UTILITY_CMD_LOGS="./"
+BOT_STATUS_MSG="We're back baby"
+BOT_EMBED_THUMBNAIL=""
 ############################################################
 #                                                          #
 #                      SERVICE API KEYS                    #
@@ -20,8 +23,89 @@ BOT_STATUS_MSG="BLANK"
 # This program uses API keys from various services. Refer to each service's site for
 # documentation on requesting and utilizing their APIs. The main branch of this is tested
 # with the free versions of these APIs.
-WOLFRAM_ALPHA="BLANK"
-IGDB="BLANK"
-OPEN_WEATHER_MAP="BLANK"
-NASA="BLANK"
-STEAM="BLANK"
+WOLFRAM_ALPHA=""
+IGDB=""
+OPEN_WEATHER_MAP=""
+NASA=""
+STEAM=""
+
+############################################################
+#                                                          #
+#                     UTILITY COMMANDS VARS                #
+#                                                          #
+############################################################
+
+# This is used to determine the image used for the wiki command thumbnail. It checks and sees if any of the images that are part of the page match 
+# before doing a title match (and if there are none, it picks the first img or displays nothing).
+WIKI_IMG_KEYWORDS = [
+    "portrait",
+    "box",
+    "boxart",
+    "poster",
+    "cover",
+    "art",
+    "box art"
+]
+
+############################################################
+#                                                          #
+#             DOWNLOAD / STREAM COMMAND VARS               #
+#                                                          #
+############################################################
+
+VIDEO_DOWNLOAD_DIR = "./vid_downloads"
+GIF_DIR = "./gif_downloads"
+MAX_FILE_SIZE_MB = 4 # Current limit for Discord bot uploads, increase if the platform allows it.
+ALLOWED_GIFCONVERT_EXTENSIONS = ['.mp4', '.webm', '.mov']
+
+############################################################
+#                                                          #
+#                      FUN COMMANDS VARS                   #
+#                                                          #
+############################################################
+# Magic 8Ball
+MAGIC_8BALL_RESPONSES = [
+    'It is certain.', 
+    'It is decidedly so.', 
+    'Without a doubt.', 
+    'Yes - definitely.',
+    'You may rely on it.', 
+    'As I see it, yes.', 
+    'Most likely.', 
+    'Outlook good.', 
+    'Yes.',
+    'Signs point to yes.', 
+    'Reply hazy, try again later.', 
+    'Ask another time.',
+    "Don't ask questions you don't want to know the answer to.", 
+    'Cannot predict now.',
+    'Ask your mother.', 
+    "Don't count on it.", 
+    'My reply is no.', 
+    'My sources say no.',
+    'Outlook not so good.', 
+    'Very doubtful.'
+]
+
+PAIN_IMG_RESPONSES = [
+    "**DON'T CALL IT A GRAVE, IT'S THE FUTURE YOU CHOSE**", 
+    "**THE BELLS TOLL FOR THEE**",
+    "**WHEN WILL YOU LEARN THAT YOUR ACTIONS HAVE CONSEQUENCES**", 
+    "**THE ABYSS HAS FINALLY STARED BACK**"
+    ]
+# Russian Roulette 
+CHAMBER_COUNT=6 # Must be int,
+LOSS_CHAMBER=6 # Must be int, 
+
+# Kino Command: Use a dict of regex strings to select their respective link and 
+# response message. These are set in an array so it can randomly pick a response.
+[kino_dict]
+examplePattern = { regex = "(?i)\\bshrek\\b", url = "https://link-to-media.mp4", msgContents = ["random cool message here"] }
+
+
+
+
+
+
+
+
