@@ -1,28 +1,28 @@
+from collections import deque
+from datetime import timedelta
 import discord
 from discord.ext import commands
 import yt_dlp as youtube_dl
 import asyncio
-from collections import deque
-from datetime import timedelta
 
 class MusicPlayer(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.voice_clients = {}  
-        self.current_song = {}   
-        self.queues = {}         
+        self.voice_clients = {}
+        self.current_song = {}  
+        self.queues = {}
 
     async def join(self, ctx):
         """Join the voice channel."""
         if ctx.author.voice is None:
             embed = discord.Embed(
                     title='Join Command Error',
-                    description=f"❌ You need to be in a voice channel to use this command.",
+                    description="❌ You need to be in a voice channel to use this command.",
                     color=discord.Color.red()
             )
             embed.set_thumbnail(url=ctx.author.display_avatar.url)
 
-            await ctx.send(ctx.mention, embed=embed)
+            await ctx.send(ctx.author.mention, embed=embed)
             return False
             
         channel = ctx.author.voice.channel
@@ -34,7 +34,6 @@ class MusicPlayer(commands.Cog):
         else:
             self.voice_clients[guild_id] = await channel.connect()
             
-        # Initialize queue for this guild if it doesn't exist
         if guild_id not in self.queues:
             self.queues[guild_id] = deque()
             
@@ -58,7 +57,6 @@ class MusicPlayer(commands.Cog):
         """Play a song or add it to the queue."""
         guild_id = ctx.guild.id
         
-        # Join voice channel if not already connected
         if guild_id not in self.voice_clients or not self.voice_clients[guild_id].is_connected():
             success = await self.join(ctx)
             if not success:
@@ -66,17 +64,14 @@ class MusicPlayer(commands.Cog):
         
         voice_client = self.voice_clients[guild_id]
         
-        # If already playing, add to queue instead of playing immediately
         if voice_client.is_playing() or voice_client.is_paused():
             await self._add_to_queue(ctx, url)
             return
         
-        # Not playing anything, start playing this song directly
         await self._play_song(ctx, url)
     
     async def _extract_info(self, url):
         """Extract audio info with multiple format fallbacks."""
-        # First attempt with best audio format
         ydl_opts = {
             'format': 'bestaudio/best',
             'noplaylist': True,
@@ -92,21 +87,18 @@ class MusicPlayer(commands.Cog):
                 return info
         except Exception as e:
             if "Requested format is not available" in str(e):
-                # Try with a more generic format string
                 ydl_opts['format'] = 'best'
                 try:
                     with youtube_dl.YoutubeDL(ydl_opts) as ydl:
                         info = ydl.extract_info(url, download=False)
                         return info
-                except Exception as e2:
-                    # Try with no format specification at all
+                except Exception:
                     del ydl_opts['format']
                     try:
                         with youtube_dl.YoutubeDL(ydl_opts) as ydl:
                             info = ydl.extract_info(url, download=False)
                             return info
-                    except Exception as e3:
-                        # Last attempt - with minimal options
+                    except Exception:
                         minimal_opts = {
                             'quiet': True,
                             'no_warnings': True,
@@ -115,29 +107,25 @@ class MusicPlayer(commands.Cog):
                             with youtube_dl.YoutubeDL(minimal_opts) as ydl:
                                 info = ydl.extract_info(url, download=False)
                                 return info
-                        except Exception as e4:
-                            raise Exception(f"Failed to extract info after multiple attempts: {str(e4)}")
+                        except Exception as e:
+                            raise Exception(f"Failed to extract info after multiple attempts: {str(e)}")
             else:
-                # Re-raise original exception if it's not a format issue
                 raise
 
     async def _get_audio_url(self, info):
         """Get the best available audio URL from info dict."""
-        # Try several methods to get the audio URL
         if 'url' in info:
             return info['url']
         
         if 'formats' in info and info['formats']:
-            # Try to find an audio-only format first
             audio_formats = [f for f in info['formats'] if f.get('acodec') != 'none' and f.get('vcodec') == 'none']
             if audio_formats:
                 return audio_formats[0]['url']
             
-            # If no audio-only format, just take the first format with a URL
             for fmt in info['formats']:
                 if 'url' in fmt:
                     return fmt['url']
-        
+
         raise Exception("Could not find a playable audio URL in the video information")
 
     async def _add_to_queue(self, ctx, url):
@@ -149,18 +137,16 @@ class MusicPlayer(commands.Cog):
                     color=discord.Color.yellow()
         )
         embed.set_thumbnail(url=ctx.author.display_avatar.url)
-        message = await ctx.send(ctx.mention, embed=embed)
-        
+        message = await ctx.send(ctx.author.mention, embed=embed)
+
         try:
-            # Extract info with fallbacks
             info = await self._extract_info(url)
-            
-            if 'entries' in info:  # If it's a playlist, get the first video
+
+            if 'entries' in info:  
                 info = info['entries'][0]
-            
-            # Get audio URL with fallbacks
+
             audio_url = await self._get_audio_url(info)
-            
+
             song_info = {
                 'title': info.get('title', 'Unknown title'),
                 'url': url,
@@ -168,10 +154,9 @@ class MusicPlayer(commands.Cog):
                 'duration': info.get('duration', 0),
                 'requester': ctx.author.name
             }
-            
-            # Add to queue
+
             self.queues[guild_id].append(song_info)
-            
+
             duration_str = str(timedelta(seconds=song_info['duration'])) if song_info['duration'] else "Unknown"
             position = len(self.queues[guild_id])
 
@@ -182,7 +167,7 @@ class MusicPlayer(commands.Cog):
             )
             embed.set_thumbnail(url=ctx.author.display_avatar.url)
             await message.edit(embed=embed)
-                
+
         except Exception as e:
             embed = discord.Embed(
                     title='Error Adding to Queue',
@@ -196,8 +181,7 @@ class MusicPlayer(commands.Cog):
         """Play a song from URL or song_info."""
         guild_id = ctx.guild.id
         voice_client = self.voice_clients[guild_id]
-        
-        # If song_info is not provided, extract it from URL
+
         if not song_info:
             embed = discord.Embed(
                     title='Searching for Track',
@@ -205,18 +189,16 @@ class MusicPlayer(commands.Cog):
                     color=discord.Color.yellow()
             )
             embed.set_thumbnail(url=ctx.author.display_avatar.url)
-            message = await ctx.send(ctx.mention, embed=embed)
-            
+            message = await ctx.send(ctx.author.mention, embed=embed)
+
             try:
-                # Extract info with fallbacks
                 info = await self._extract_info(url)
-                
-                if 'entries' in info:  # If it's a playlist, get the first video
+
+                if 'entries' in info: 
                     info = info['entries'][0]
-                
-                # Get audio URL with fallbacks
+
                 audio_url = await self._get_audio_url(info)
-                
+
                 song_info = {
                     'title': info.get('title', 'Unknown title'),
                     'url': url,
@@ -224,10 +206,9 @@ class MusicPlayer(commands.Cog):
                     'duration': info.get('duration', 0),
                     'requester': ctx.author.name
                 }
-                
-                # Update message with song info
+
                 await message.edit(content=f"🎵 Preparing to play: **{song_info['title']}**")
-                    
+
             except Exception as e:
                 if message:
                     await message.edit(content=f"❌ Error: {str(e)}")
@@ -236,24 +217,22 @@ class MusicPlayer(commands.Cog):
         
         try:
             self.current_song[guild_id] = song_info
-            
+
             # Set options like this in case of connectivity issues.
             ffmpeg_options = {
                 'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
                 'options': '-vn -bufsize 1M'
             }
-            
-            # Play the audio using FFMPEG
+
             voice_client.play(
                 discord.FFmpegPCMAudio(song_info['audio_url'], **ffmpeg_options),
                 after=lambda e: asyncio.run_coroutine_threadsafe(
                     self._after_play(ctx, e, guild_id), self.bot.loop
                 )
             )
-            
-            # Default volume values
+
             voice_client.source = discord.PCMVolumeTransformer(voice_client.source, volume=0.5)
-            
+
             duration_str = str(timedelta(seconds=song_info['duration'])) if song_info['duration'] else "Unknown"
             embed = discord.Embed(
                     title='Playing Track',
@@ -261,8 +240,8 @@ class MusicPlayer(commands.Cog):
                     color=discord.Color.green()
             )
             embed.set_thumbnail(url=ctx.author.display_avatar.url)
-            await ctx.send(ctx.mention, embed=embed)
-            
+            await ctx.send(ctx.author.mention, embed=embed)
+
         except Exception as e:
             embed = discord.Embed(
                     title='Could Not Play Song',
@@ -270,7 +249,7 @@ class MusicPlayer(commands.Cog):
                     color=discord.Color.red()
             )
             embed.set_thumbnail(url=ctx.author.display_avatar.url)
-            await ctx.send(ctx.mention, embed=embed)
+            await ctx.send(ctx.author.mention, embed=embed)
             await self._play_next(ctx, guild_id)
 
     async def _after_play(self, ctx, error, guild_id):
@@ -282,15 +261,13 @@ class MusicPlayer(commands.Cog):
                     color=discord.Color.red()
             )
             embed.set_thumbnail(url=ctx.author.display_avatar.url)
-            await ctx.send(ctx.mention, embed=embed)
+            await ctx.send(ctx.author.mention, embed=embed)
         
-        # Clean up current song info
         if guild_id in self.current_song:
             del self.current_song[guild_id]
             
-        # Play next song in queue if available
         await self._play_next(ctx, guild_id)
-    
+
     async def _play_next(self, ctx, guild_id):
         """Play the next song in the queue if available."""
         if guild_id not in self.queues or not self.queues[guild_id] or guild_id not in self.voice_clients:
@@ -299,10 +276,8 @@ class MusicPlayer(commands.Cog):
         if not self.voice_clients[guild_id].is_connected():
             return
             
-        # Get next song from queue
         next_song = self.queues[guild_id].popleft()
         
-        # Play it
         await self._play_song(ctx, song_info=next_song)
 
     @commands.command(name='join')
@@ -315,7 +290,7 @@ class MusicPlayer(commands.Cog):
                     color=discord.Color.green()
             )
             embed.set_thumbnail(url=ctx.author.display_avatar.url)
-            await ctx.send(ctx.mention, embed=embed)
+            await ctx.send(ctx.author.mention, embed=embed)
 
     @commands.command(name='leave')
     async def leave_command(self, ctx):
@@ -327,7 +302,7 @@ class MusicPlayer(commands.Cog):
                     color=discord.Color.green()
             )
             embed.set_thumbnail(url=ctx.author.display_avatar.url)
-            await ctx.send(ctx.mention, embed=embed)
+            await ctx.send(ctx.author.mention, embed=embed)
         else:
             embed = discord.Embed(
                     title='IgnisBot Not in a Channel',
@@ -335,13 +310,13 @@ class MusicPlayer(commands.Cog):
                     color=discord.Color.red()
             )
             embed.set_thumbnail(url=ctx.author.display_avatar.url)
-            await ctx.send(ctx.mention, embed=embed)
+            await ctx.send(ctx.author.mention, embed=embed)
 
     @commands.command(name='play')
     async def play_command(self, ctx, *, url):
         """Command to play audio from a YouTube URL or add it to the queue."""
         await self.play(ctx, url)
-    
+
     @commands.command(name='skip')
     async def skip_command(self, ctx):
         """Command to skip the current song."""
@@ -354,7 +329,7 @@ class MusicPlayer(commands.Cog):
                     color=discord.Color.green()
             )
             embed.set_thumbnail(url=ctx.author.display_avatar.url)
-            await ctx.send(ctx.mention, embed=embed)
+            await ctx.send(ctx.author.mention, embed=embed)
         else:
             embed = discord.Embed(
                     title='No Songs Playing',
@@ -362,15 +337,14 @@ class MusicPlayer(commands.Cog):
                     color=discord.Color.red()
             )
             embed.set_thumbnail(url=ctx.author.display_avatar.url)
-            await ctx.send(ctx.mention, embed=embed)
-    
+            await ctx.send(ctx.author.mention, embed=embed)
+
     @commands.command(name='stop')
     async def stop_command(self, ctx):
         """Command to stop playback and clear the queue."""
         guild_id = ctx.guild.id
         if guild_id in self.voice_clients and self.voice_clients[guild_id].is_playing():
             self.voice_clients[guild_id].stop()
-            # Clear the queue
             if guild_id in self.queues:
                 self.queues[guild_id].clear()
             embed = discord.Embed(
@@ -379,7 +353,7 @@ class MusicPlayer(commands.Cog):
                     color=discord.Color.green()
             )
             embed.set_thumbnail(url=ctx.author.display_avatar.url)
-            await ctx.send(ctx.mention, embed=embed)
+            await ctx.send(ctx.author.mention, embed=embed)
         else:
             embed = discord.Embed(
                     title='No Songs Playing',
@@ -387,8 +361,8 @@ class MusicPlayer(commands.Cog):
                     color=discord.Color.red()
             )
             embed.set_thumbnail(url=ctx.author.display_avatar.url)
-            await ctx.send(ctx.mention, embed=embed)
-    
+            await ctx.send(ctx.author.mention, embed=embed)
+
     @commands.command(name='pause')
     async def pause_command(self, ctx):
         """Pause the current playback."""
@@ -402,7 +376,7 @@ class MusicPlayer(commands.Cog):
                     color=discord.Color.green()
             )
             embed.set_thumbnail(url=ctx.author.display_avatar.url)
-            await ctx.send(ctx.mention, embed=embed)
+            await ctx.send(ctx.author.mention, embed=embed)
         else:
             embed = discord.Embed(
                     title='No Songs Playing',
@@ -410,8 +384,8 @@ class MusicPlayer(commands.Cog):
                     color=discord.Color.red()
             )
             embed.set_thumbnail(url=ctx.author.display_avatar.url)
-            await ctx.send(ctx.mention, embed=embed)
-    
+            await ctx.send(ctx.author.mention, embed=embed)
+
     @commands.command(name='resume')
     async def resume_command(self, ctx):
         """Resume the paused playback."""
@@ -424,7 +398,7 @@ class MusicPlayer(commands.Cog):
                     color=discord.Color.green()
             )
             embed.set_thumbnail(url=ctx.author.display_avatar.url)
-            await ctx.send(ctx.mention, embed=embed)
+            await ctx.send(ctx.author.mention, embed=embed)
         else:
             embed = discord.Embed(
                     title='Song Pause Error',
@@ -432,15 +406,14 @@ class MusicPlayer(commands.Cog):
                     color=discord.Color.red()
             )
             embed.set_thumbnail(url=ctx.author.display_avatar.url)
-            await ctx.send(ctx.mention, embed=embed)
-    
+            await ctx.send(ctx.author.mention, embed=embed)
+
     @commands.command(name='volume', aliases=['vol'])
     async def volume_command(self, ctx, volume: int = None):
         """Change the playback volume (0-100)."""
         guild_id = ctx.guild.id
-        
+
         if volume is None:
-            # Just show current volume
             if guild_id in self.voice_clients and self.voice_clients[guild_id].source:
                 current_vol = int(self.voice_clients[guild_id].source.volume * 100)
                 embed = discord.Embed(
@@ -449,17 +422,17 @@ class MusicPlayer(commands.Cog):
                     color=discord.Color.green()
                 )
                 embed.set_thumbnail(url=ctx.author.display_avatar.url)
-                await ctx.send(ctx.mention, embed=embed)
+                await ctx.send(ctx.author.mention, embed=embed)
             else:
                 embed = discord.Embed(
                     title='No Songs Playing',
-                    description=f"❌ Nothing is playing right now",
+                    description="❌ Nothing is playing right now",
                     color=discord.Color.red()
                 )
                 embed.set_thumbnail(url=ctx.author.display_avatar.url)
-                await ctx.send(ctx.mention, embed=embed)
+                await ctx.send(ctx.author.mention, embed=embed)
             return
-            
+
         if volume < 0 or volume > 100:
             embed = discord.Embed(
                     title='Volume Command Error',
@@ -467,9 +440,9 @@ class MusicPlayer(commands.Cog):
                     color=discord.Color.red()
             )
             embed.set_thumbnail(url=ctx.author.display_avatar.url)
-            await ctx.send(ctx.mention, embed=embed)
+            await ctx.send(ctx.author.mention, embed=embed)
             return
-            
+
         if guild_id in self.voice_clients and self.voice_clients[guild_id].source:
             self.voice_clients[guild_id].source.volume = volume / 100
             embed = discord.Embed(
@@ -478,7 +451,7 @@ class MusicPlayer(commands.Cog):
                     color=discord.Color.green()
             )
             embed.set_thumbnail(url=ctx.author.display_avatar.url)
-            await ctx.send(ctx.mention, embed=embed)
+            await ctx.send(ctx.author.mention, embed=embed)
         else:
             embed = discord.Embed(
                     title='No Songs Playing',
@@ -486,8 +459,8 @@ class MusicPlayer(commands.Cog):
                     color=discord.Color.red()
             )
             embed.set_thumbnail(url=ctx.author.display_avatar.url)
-            await ctx.send(ctx.mention, embed=embed)
-    
+            await ctx.send(ctx.author.mention, embed=embed)
+
     @commands.command(name='np', aliases=['nowplaying'])
     async def now_playing_command(self, ctx):
         """Show what song is currently playing."""
@@ -501,7 +474,7 @@ class MusicPlayer(commands.Cog):
                     color=discord.Color.green()
             )
             embed.set_thumbnail(url=ctx.author.display_avatar.url)
-            await ctx.send(ctx.mention, embed=embed)
+            await ctx.send(ctx.author.mention, embed=embed)
         else:
             embed = discord.Embed(
                     title='No Songs Playing',
@@ -509,7 +482,7 @@ class MusicPlayer(commands.Cog):
                     color=discord.Color.red()
             )
             embed.set_thumbnail(url=ctx.author.display_avatar.url)
-            await ctx.send(ctx.mention, embed=embed)
+            await ctx.send(ctx.author.mention, embed=embed)
 
     @commands.command(name='queue', aliases=['q'])
     async def queue_command(self, ctx):
@@ -522,13 +495,11 @@ class MusicPlayer(commands.Cog):
                     color=discord.Color.red()
             )
             embed.set_thumbnail(url=ctx.author.display_avatar.url)
-            await ctx.send(ctx.mention, embed=embed)
+            await ctx.send(ctx.author.mention, embed=embed)
             return
-            
-        # Create queue embed
+
         embed = discord.Embed(title="🎵 Music Queue", color=discord.Color.green())
-        
-        # Add currently playing song
+
         if guild_id in self.current_song:
             song = self.current_song[guild_id]
             duration_str = str(timedelta(seconds=song.get('duration', 0))) if song.get('duration') else "Unknown"
@@ -537,11 +508,10 @@ class MusicPlayer(commands.Cog):
                 value=f"**{song['title']}** [{duration_str}] - Requested by: {song['requester']}", 
                 inline=False
             )
-        
-        # Add queued songs
+
         queue_text = ""
         total_duration = 0
-        
+
         for i, song in enumerate(self.queues[guild_id], 1):
             duration = song.get('duration', 0)
             total_duration += duration
@@ -555,16 +525,15 @@ class MusicPlayer(commands.Cog):
                 break
                 
             queue_text += entry
-        
+
         if queue_text:
             embed.add_field(name="Up Next", value=queue_text, inline=False)
-            
-        # Add total duration
+
         total_duration_str = str(timedelta(seconds=total_duration)) if total_duration else "Unknown"
         embed.set_footer(text=f"Total songs in queue: {len(self.queues[guild_id])} | Total duration: {total_duration_str}")
-        
-        await ctx.send(ctx.mention, embed=embed)
-        
+
+        await ctx.send(ctx.author.mention, embed=embed)
+
     @commands.command(name='clear')
     async def clear_command(self, ctx):
         """Clear the music queue."""
@@ -578,16 +547,16 @@ class MusicPlayer(commands.Cog):
                     color=discord.Color.green()
             )
             embed.set_thumbnail(url=ctx.author.display_avatar.url)
-            await ctx.send(ctx.mention, embed=embed)
+            await ctx.send(ctx.author.mention, embed=embed)
         else:
             embed = discord.Embed(
                     title='No Songs Queued',
-                    description=f"📋 The queue is already empty",
+                    description="📋 The queue is already empty",
                     color=discord.Color.red()
             )
             embed.set_thumbnail(url=ctx.author.display_avatar.url)
-            await ctx.send(ctx.mention, embed=embed)
-            
+            await ctx.send(ctx.author.mention, embed=embed)
+
     @commands.command(name='remove')
     async def remove_command(self, ctx, position: int):
         """Remove a specific song from the queue."""
@@ -595,13 +564,13 @@ class MusicPlayer(commands.Cog):
         if guild_id not in self.queues or len(self.queues[guild_id]) == 0:
             embed = discord.Embed(
                     title='No Songs Queued',
-                    description=f"📋 The queue is empty",
+                    description="📋 The queue is empty",
                     color=discord.Color.red()
             )
             embed.set_thumbnail(url=ctx.author.display_avatar.url)
-            await ctx.send(ctx.mention, embed=embed)
+            await ctx.send(ctx.author.mention, embed=embed)
             return
-            
+
         if position < 1 or position > len(self.queues[guild_id]):
             embed = discord.Embed(
                     title='Invalid Song Position',
@@ -609,10 +578,9 @@ class MusicPlayer(commands.Cog):
                     color=discord.Color.red()
             )
             embed.set_thumbnail(url=ctx.author.display_avatar.url)
-            await ctx.send(ctx.mention, embed=embed)
+            await ctx.send(ctx.author.mention, embed=embed)
             return
             
-        # Convert to 0-indexed and remove
         position -= 1
         removed_song = list(self.queues[guild_id])[position]
         new_queue = deque()
@@ -628,7 +596,7 @@ class MusicPlayer(commands.Cog):
                     color=discord.Color.green()
         )
         embed.set_thumbnail(url=ctx.author.display_avatar.url)
-        await ctx.send(ctx.mention, embed=embed)
+        await ctx.send(ctx.author.mention, embed=embed)
 
 async def setup(bot):
     await bot.add_cog(MusicPlayer(bot))

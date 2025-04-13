@@ -1,10 +1,11 @@
-# I. Jared 1/1/2025
-
-import discord
+"""
+IgnisBot Main Module
+Author: Isaiah Jared (2019)
+"""
 import datetime
 from datetime import datetime
 import os
-from os import path
+import discord
 from discord.ext import commands
 import toml
 
@@ -16,16 +17,21 @@ OWNER_ID = config["OWNER_ID"]
 BOT_STATUS_MSG = config["BOT_STATUS_MSG"]
 COGS_DIR = config["COGS_DIR"]
 
-bot = commands.Bot(command_prefix=COMMAND_PREFIX, case_insensitive=True, owner_id=OWNER_ID, intents=discord.Intents.all())
+bot = commands.Bot(
+  command_prefix=COMMAND_PREFIX, 
+  case_insensitive=True, 
+  owner_id=OWNER_ID, 
+  intents=discord.Intents.all()
+  )
 
-#! Write another version of this in another cog. 
-bot.remove_command('help')
+
+bot.remove_command('help') # Defining our own help cmd in utility commands, leave this in place.
 
 @bot.event
 async def on_ready():
   now_ready = datetime.now()
   dt_str_ready = now_ready.strftime("%m/%d/%Y %H:%M:%S")
-  print("Ignis Bot ::::: ONLINE\n\n{}".format(dt_str_ready))
+  print(f"Ignis Bot ::::: ONLINE\n\n{dt_str_ready}")
   await bot.change_presence(activity=discord.Game(name=BOT_STATUS_MSG))
 
 @bot.event

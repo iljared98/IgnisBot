@@ -4,8 +4,6 @@ import datetime
 from datetime import datetime, timedelta
 import platform
 from wikipedia import wikipedia as wk
-#import wikipediaapi
-import pyshorteners
 import wolframalpha as wa
 from pyowm import OWM
 import os
@@ -148,14 +146,14 @@ class Utility(commands.Cog):
   @commands.command(aliases=['wolfram', 'wa', 'wolf'])
   async def wolframalpha(self, ctx, *, query):
       try:
-          waClient = wa.Client(WA_KEY)
+          wolfram_client = wa.Client(WA_KEY)
           embed = discord.Embed(description=f'**__Question:__** *{query}*')
 
           def sync_query(client, query):
               return client.query(query)
 
           # Run the synchronous WolframAlpha query in a separate thread
-          search = await asyncio.to_thread(sync_query, waClient, query)
+          search = await asyncio.to_thread(sync_query, wolfram_client, query)
           result = next(search.results).text
           embed.add_field(name='Answer', value=f'{result}')
 
@@ -378,7 +376,6 @@ class Utility(commands.Cog):
       except Exception as e:
           print(f"[Weather Error] {e}")  # Debug log
           await ctx.send(f':warning: {ctx.author.mention} There was an issue with your OpenWeatherMap query. Please check the city name or ZIP code and try again.')
-   
 
 
 
